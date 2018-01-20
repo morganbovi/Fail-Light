@@ -14,6 +14,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 
+import me.oen.fail_light.model.Failure;
+
 /**
  * Skeleton of an Android Things activity.
  * <p>
@@ -35,6 +37,8 @@ import java.io.IOException;
  */
 public class MainActivity extends Activity {
 
+    private static final int DEAFULT_FAIL_FOR = 5;
+
     private Gpio gpio;
     private DatabaseReference doFailRef;
     private Handler handler = new Handler();
@@ -51,8 +55,8 @@ public class MainActivity extends Activity {
     public void initFirebase() {
         // Write a message to the database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        doFailRef = database.getReference("doFail");
-        doFailRef.setValue(false);
+        doFailRef = database.getReference("failure");
+        doFailRef.setValue(new Failure(false, DEAFULT_FAIL_FOR));
     }
 
     public void initGPIO() {
@@ -71,10 +75,10 @@ public class MainActivity extends Activity {
         doFailRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Boolean lightOn = dataSnapshot.getValue(Boolean.class);
+                Failure failure = dataSnapshot.getValue(Failure.class);
                 try {
-                    if (lightOn != null) {
-                        if (lightOn) {
+                    if (failure != null) {
+                        if (failure.isDoFail()) {
                             gpio.setValue(false);
                             handler = new Handler();
                             handler.postDelayed(new Runnable() {
@@ -82,12 +86,12 @@ public class MainActivity extends Activity {
                                 public void run() {
                                     try {
                                         gpio.setValue(true);
-                                        doFailRef.setValue(false);
+                                        doFailRef.setValue(new Failure(false, DEAFULT_FAIL_FOR));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 }
-                            }, 5000);
+                            }, failure.getFailFor() * 1000);
                         } else {
                             gpio.setValue(true);
                             handler.removeCallbacksAndMessages(null);
@@ -110,27 +114,5 @@ public class MainActivity extends Activity {
                 }
             }
         });
-//        for (int i = 0; i < 15; i++){
-//            try {
-//                gpio.setValue(!gpio.getValue());
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e)ture {
-//                    e.printStackTrace();
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-//        try {
-//            Gpio gpio = service.openGpio("BCM14");
-//            gpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
-//            gpio.setActiveType(Gpio.ACTIVE_LOW);
-//            gpio.setValue(true);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
     }
 }
