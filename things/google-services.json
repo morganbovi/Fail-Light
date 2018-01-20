@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "259485583673",
+    "firebase_url": "https://fail-light.firebaseio.com",
+    "project_id": "fail-light",
+    "storage_bucket": "fail-light.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259485583673:android:19b264a4468251e1",
+        "android_client_info": {
+          "package_name": "me.oen.fail_light"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "259485583673-u3d65b3h7ek53g56gasfmaofv69deom0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDo9LjKOvyonRMfi7ee_qtPYKQfGBIDdc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
