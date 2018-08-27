@@ -1,10 +1,5 @@
 package me.oen.fail_light;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
-
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.PeripheralManager;
 import com.google.firebase.database.DataSnapshot;
@@ -13,10 +8,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Handler;
+
 import java.io.IOException;
 
 import me.oen.fail_light.model.Failure;
 import me.oen.fail_light.model.Lights;
+import me.oen.fail_light.model.Success;
 
 /**
  * Skeleton of an Android Things activity.
@@ -48,10 +48,14 @@ public class MainActivity extends Activity {
     private Gpio blue;
 
     private DatabaseReference doFailRef;
-    private DatabaseReference lights;
+    private DatabaseReference doSuccessRef;
+    private DatabaseReference lightsRef;
     private Handler handler = new Handler();
 
-    private boolean isRunning;
+    private boolean failIsRunning;
+    private boolean successIsRunning;
+
+    private Lights mLights;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,12 +70,14 @@ public class MainActivity extends Activity {
         // Write a message to the database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         doFailRef = database.getReference("failure");
-        lights = database.getReference("lights");
         doFailRef.setValue(new Failure(false, DEAFULT_FAIL_FOR));
+        doSuccessRef = database.getReference("success");
+        doSuccessRef.setValue(new Success(false, DEAFULT_FAIL_FOR));
+        lightsRef = database.getReference("lights");
     }
 
     public void initGPIO() {
-        PeripheralManager service = PeripheralManager.getInstance();
+        final PeripheralManager service = PeripheralManager.getInstance();
 
         try {
             gpio = service.openGpio("BCM14");
@@ -97,55 +103,44 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-
-//        for (int i = 10; i > 0; i--) {
-//            try {
-//                green.setValue(true);
-//                Thread.sleep(1000);
-//                green.setValue(false);
-//                Thread.sleep(1000);
-//
-//                red.setValue(true);
-//                Thread.sleep(1000);
-//                red.setValue(false);
-//                Thread.sleep(1000);
-//
-//                blue.setValue(true);
-//                Thread.sleep(1000);
-//                blue.setValue(false);
-//                Thread.sleep(1000);
-//
-//                blue.setValue(true);
-//                green.setValue(true);
-//                red.setValue(true);
-//                Thread.sleep(5000);
-//                blue.setValue(false);
-//                green.setValue(false);
-//                red.setValue(false);
-//
-//                Thread.sleep(3000);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-
-
         doFailRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Failure failure = dataSnapshot.getValue(Failure.class);
                 try {
-                    if (failure != null && !isRunning) {
+                    if (failure != null && !failIsRunning && !successIsRunning) {
                         if (failure.isDoFail()) {
-                            isRunning = true;
+                            failIsRunning = true;
                             gpio.setValue(false);
+
+                            red.setValue(true);
+                            green.setValue(false);
+                            blue.setValue(false);
+
                             handler = new Handler();
                             handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        isRunning = false;
+                                        failIsRunning = false;
                                         gpio.setValue(true);
+
+                                        if (mLights != null) {
+                                            if (mLights.getWhite()) {
+                                                red.setValue(true);
+                                                green.setValue(true);
+                                                blue.setValue(true);
+                                            } else {
+                                                red.setValue(mLights.getRed());
+                                                green.setValue(mLights.getGreen());
+                                                blue.setValue(mLights.getBlue());
+                                            }
+                                        } else {
+                                            red.setValue(false);
+                                            green.setValue(false);
+                                            blue.setValue(true);
+                                        }
+
                                         doFailRef.setValue(new Failure(false, DEAFULT_FAIL_FOR));
                                     } catch (IOException e) {
                                         e.printStackTrace();
@@ -175,12 +170,79 @@ public class MainActivity extends Activity {
             }
         });
 
-        lights.addValueEventListener(new ValueEventListener() {
+        doSuccessRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Lights lights = dataSnapshot.getValue(Lights.class);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final Success success = dataSnapshot.getValue(Success.class);
                 try {
-                    if (lights.getWhite()) {
+                    if (success != null && !successIsRunning && !failIsRunning) {
+                        if (success.getDoSuccess()) {
+                            successIsRunning = true;
+
+                            red.setValue(false);
+                            green.setValue(true);
+                            blue.setValue(false);
+
+                            handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        successIsRunning = false;
+
+                                        if (mLights != null) {
+                                            if (mLights.getWhite()) {
+                                                red.setValue(true);
+                                                green.setValue(true);
+                                                blue.setValue(true);
+                                            } else {
+                                                red.setValue(mLights.getRed());
+                                                green.setValue(mLights.getGreen());
+                                                blue.setValue(mLights.getBlue());
+                                            }
+                                        } else {
+                                            red.setValue(false);
+                                            green.setValue(false);
+                                            blue.setValue(true);
+                                        }
+
+                                        doSuccessRef.setValue(new Success(false, DEAFULT_FAIL_FOR));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, success.getSucceedFor() * 1000);
+                        } else {
+                            handler.removeCallbacksAndMessages(null);
+                        }
+                    } else {
+                        handler.removeCallbacksAndMessages(null);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                try {
+                    gpio.setValue(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        lightsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mLights = dataSnapshot.getValue(Lights.class);
+                try {
+                    if (failIsRunning) {
+                        return;
+                    }
+
+                    if (mLights.getWhite()) {
                         blue.setValue(true);
                         green.setValue(true);
                         red.setValue(true);
@@ -191,9 +253,9 @@ public class MainActivity extends Activity {
                         red.setValue(false);
                     }
 
-                    red.setValue(lights.getRed());
-                    blue.setValue(lights.getBlue());
-                    green.setValue(lights.getGreen());
+                    red.setValue(mLights.getRed());
+                    blue.setValue(mLights.getBlue());
+                    green.setValue(mLights.getGreen());
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -201,7 +263,7 @@ public class MainActivity extends Activity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError) {
 
             }
         });
@@ -212,6 +274,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         try {
+            gpio.close();
             red.close();
             green.close();
             blue.close();

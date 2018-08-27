@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FailLight.iml" filepath="$PROJECT_DIR$/FailLight.iml" />
-      <module fileurl="file://$PROJECT_DIR$/mobile/mobile.iml" filepath="$PROJECT_DIR$/mobile/mobile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Fail-Light.iml" filepath="$PROJECT_DIR$/Fail-Light.iml" />
+      <module fileurl="file://$PROJECT_DIR$/faillightcontrol/faillightcontrol.iml" filepath="$PROJECT_DIR$/faillightcontrol/faillightcontrol.iml" />
       <module fileurl="file://$PROJECT_DIR$/things/things.iml" filepath="$PROJECT_DIR$/things/things.iml" />
     </modules>
   </component>
