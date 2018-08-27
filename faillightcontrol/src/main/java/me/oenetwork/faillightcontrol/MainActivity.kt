@@ -11,12 +11,14 @@ import kotlinx.android.synthetic.main.activity_main.*
 import me.oenetwork.faillightcontrol.model.Failure
 import me.oenetwork.faillightcontrol.model.Lights
 import me.oenetwork.faillightcontrol.model.Success
+import me.oenetwork.faillightcontrol.model.Unstable
 
 class MainActivity : AppCompatActivity() {
 
     private val database = FirebaseDatabase.getInstance()
     private var doFailRef = database.getReference("failure")
     private var doSuccessRef = database.getReference("success")
+    private var doUnstableRef = database.getReference("unstable")
     private var lightsRef = database.getReference("lights")
 
     private var lights = Lights()
@@ -78,6 +80,10 @@ class MainActivity : AppCompatActivity() {
 
         succeed_button .setOnClickListener {
             doSuccessRef.setValue(Success(true, 10))
+        }
+
+        unstable_button .setOnClickListener {
+            doUnstableRef.setValue(Unstable(true, 10))
         }
 
     }

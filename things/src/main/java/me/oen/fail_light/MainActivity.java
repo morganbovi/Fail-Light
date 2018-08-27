@@ -17,6 +17,7 @@ import java.io.IOException;
 import me.oen.fail_light.model.Failure;
 import me.oen.fail_light.model.Lights;
 import me.oen.fail_light.model.Success;
+import me.oen.fail_light.model.Unstable;
 
 /**
  * Skeleton of an Android Things activity.
@@ -49,11 +50,13 @@ public class MainActivity extends Activity {
 
     private DatabaseReference doFailRef;
     private DatabaseReference doSuccessRef;
+    private DatabaseReference doUnstableRef;
     private DatabaseReference lightsRef;
     private Handler handler = new Handler();
 
     private boolean failIsRunning;
     private boolean successIsRunning;
+    private boolean unstableIsRunning;
 
     private Lights mLights;
 
@@ -73,6 +76,8 @@ public class MainActivity extends Activity {
         doFailRef.setValue(new Failure(false, DEAFULT_FAIL_FOR));
         doSuccessRef = database.getReference("success");
         doSuccessRef.setValue(new Success(false, DEAFULT_FAIL_FOR));
+        doUnstableRef = database.getReference("unstable");
+        doUnstableRef.setValue(new Unstable(false, DEAFULT_FAIL_FOR));
         lightsRef = database.getReference("lights");
     }
 
@@ -108,7 +113,7 @@ public class MainActivity extends Activity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Failure failure = dataSnapshot.getValue(Failure.class);
                 try {
-                    if (failure != null && !failIsRunning && !successIsRunning) {
+                    if (failure != null && !failIsRunning && !successIsRunning && !unstableIsRunning) {
                         if (failure.isDoFail()) {
                             failIsRunning = true;
                             gpio.setValue(false);
@@ -175,7 +180,7 @@ public class MainActivity extends Activity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 final Success success = dataSnapshot.getValue(Success.class);
                 try {
-                    if (success != null && !successIsRunning && !failIsRunning) {
+                    if (success != null && !successIsRunning && !failIsRunning && !unstableIsRunning) {
                         if (success.getDoSuccess()) {
                             successIsRunning = true;
 
@@ -212,6 +217,69 @@ public class MainActivity extends Activity {
                                     }
                                 }
                             }, success.getSucceedFor() * 1000);
+                        } else {
+                            handler.removeCallbacksAndMessages(null);
+                        }
+                    } else {
+                        handler.removeCallbacksAndMessages(null);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                try {
+                    gpio.setValue(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        doUnstableRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final Unstable unstable = dataSnapshot.getValue(Unstable.class);
+                try {
+                    if (unstable != null && !successIsRunning && !failIsRunning && !unstableIsRunning) {
+                        if (unstable.getDoUnstable()) {
+                            unstableIsRunning = true;
+
+                            red.setValue(true);
+                            green.setValue(true);
+                            blue.setValue(false);
+
+                            handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        unstableIsRunning = false;
+
+                                        if (mLights != null) {
+                                            if (mLights.getWhite()) {
+                                                red.setValue(true);
+                                                green.setValue(true);
+                                                blue.setValue(true);
+                                            } else {
+                                                red.setValue(mLights.getRed());
+                                                green.setValue(mLights.getGreen());
+                                                blue.setValue(mLights.getBlue());
+                                            }
+                                        } else {
+                                            red.setValue(false);
+                                            green.setValue(false);
+                                            blue.setValue(true);
+                                        }
+
+                                        doUnstableRef.setValue(new Success(false, DEAFULT_FAIL_FOR));
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, unstable.getUnstableFor() * 1000);
                         } else {
                             handler.removeCallbacksAndMessages(null);
                         }

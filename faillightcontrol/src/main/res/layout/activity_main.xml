@@ -17,7 +17,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.18" />
+        app:layout_constraintVertical_bias="0.3" />
 
     <Button
         android:id="@+id/blue_button"
@@ -114,16 +114,32 @@
         android:id="@+id/fail_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="56dp"
-        android:layout_marginStart="56dp"
-        android:layout_marginTop="8dp"
         android:text="fail"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/succeed_button"
+        app:layout_constraintEnd_toStartOf="@+id/unstable_button"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/red_button"
-        app:layout_constraintVertical_bias="0.138" />
+        app:layout_constraintTop_toTopOf="@+id/unstable_button" />
+
+    <TextView
+        android:id="@+id/textView89"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Unstable!"
+        app:layout_constraintBottom_toTopOf="@+id/unstable_button"
+        app:layout_constraintEnd_toEndOf="@+id/unstable_button"
+        app:layout_constraintStart_toStartOf="@+id/unstable_button" />
+
+    <Button
+        android:id="@+id/unstable_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        android:text=" unstable"
+        app:layout_constraintEnd_toStartOf="@+id/succeed_button"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/fail_button"
+        app:layout_constraintTop_toBottomOf="@+id/red_button" />
 
     <TextView
         android:id="@+id/textView99"
@@ -139,12 +155,10 @@
         android:id="@+id/succeed_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="52dp"
-        android:layout_marginRight="52dp"
         android:text="succeed"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/fail_button"
-        app:layout_constraintTop_toTopOf="@+id/fail_button" />
+        app:layout_constraintStart_toEndOf="@+id/unstable_button"
+        app:layout_constraintTop_toTopOf="@+id/unstable_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
